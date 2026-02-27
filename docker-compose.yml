@@ -1,0 +1,65 @@
+version: "3.9"
+
+networks:
+  p2pnet:
+    driver: bridge
+
+services:
+  directory:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    image: p2p-directory:latest
+    container_name: directory
+    ports:
+      - "8080:8080"
+    networks:
+      - p2pnet
+
+  peer-alice:
+    build:
+      context: ./peer
+      dockerfile: Dockerfile
+    image: p2p-peer:latest
+    container_name: peer-alice
+    environment:
+      - USERNAME=alice
+      - PORT=9001
+      - DIRECTORY_URL=http://directory:8080
+    ports:
+      - "9001:9001"
+    volumes:
+      - ./data/alice:/data
+    tty: true
+    stdin_open: true
+    command: ["node", "cli.js"]
+    networks:
+      - p2pnet
+
+  peer-bob:
+    build:
+      context: ./peer
+      dockerfile: Dockerfile
+    image: p2p-peer:latest
+    container_name: peer-bob
+    environment:
+      - USERNAME=bob
+      - PORT=9002
+      - DIRECTORY_URL=http://directory:8080
+    ports:
+      - "9002:9002"
+    volumes:
+      - ./data/bob:/data
+    tty: true
+    stdin_open: true
+    command: ["node", "cli.js"]
+    networks:
+      - p2pnet
+
+  tor:
+    image: dperson/torproxy
+    container_name: tor
+    ports:
+      - "9050:9050"
+    networks:
+      - p2pnet

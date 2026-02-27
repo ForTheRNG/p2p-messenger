@@ -1,2 +1,2 @@
-./peer/node_modules/*
-./server/node_modules/*
+peer/node_modules
+server/node_modules
